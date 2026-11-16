@@ -1,0 +1,244 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string
+        && id.size() >= 3
+        && id.size() <= 128
+        && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser()
+        && (
+          request.auth.token.email == 'catamazacastro@gmail.com'
+          || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        );
+    }
+
+    function isValidAviso(data) {
+      return data.keys().hasAll([
+          'authorUid',
+          'isPublic',
+          'activo',
+          'titulo',
+          'mensaje',
+          'categoria',
+          'revision',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'authorUid',
+          'isPublic',
+          'activo',
+          'titulo',
+          'mensaje',
+          'categoria',
+          'revision',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.authorUid is string
+        && data.authorUid.size() >= 1
+        && data.authorUid.size() <= 128
+        && data.isPublic is bool
+        && data.isPublic == true
+        && data.activo is bool
+        && data.titulo is string
+        && data.titulo.size() >= 1
+        && data.titulo.size() <= 140
+        && data.mensaje is string
+        && data.mensaje.size() >= 1
+        && data.mensaje.size() <= 2000
+        && data.categoria is string
+        && data.categoria in ['aviso', 'importante', 'examen', 'recordatorio']
+        && data.revision is int
+        && data.revision >= 1
+        && data.revision <= 100000
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidSharedResource(data) {
+      return data.keys().hasAll([
+          'authorUid',
+          'authorAlias',
+          'isPublic',
+          'tipoRecurso',
+          'categoria',
+          'anio',
+          'materia',
+          'titulo',
+          'contenido',
+          'etiquetas',
+          'autorFuente',
+          'isbnDoi',
+          'enlaceUrl',
+          'flashcardFrente',
+          'preguntaOpciones',
+          'preguntaCorrecta',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'authorUid',
+          'authorAlias',
+          'isPublic',
+          'tipoRecurso',
+          'categoria',
+          'anio',
+          'materia',
+          'titulo',
+          'contenido',
+          'etiquetas',
+          'autorFuente',
+          'isbnDoi',
+          'enlaceUrl',
+          'flashcardFrente',
+          'preguntaOpciones',
+          'preguntaCorrecta',
+          'createdAt',
+          'updatedAt'
+        ])
+        && data.authorUid is string
+        && data.authorUid.size() >= 1
+        && data.authorUid.size() <= 128
+        && data.authorAlias is string
+        && data.authorAlias.size() >= 1
+        && data.authorAlias.size() <= 60
+        && data.isPublic is bool
+        && data.isPublic == true
+        && data.tipoRecurso is string
+        && data.tipoRecurso in ['documento', 'flashcard', 'pregunta']
+        && data.categoria is string
+        && data.categoria in ['apuntes', 'resumenes', 'pdfs', 'libros', 'cuadros', 'flashcards', 'preguntas']
+        && data.anio is int
+        && data.anio >= 1
+        && data.anio <= 5
+        && data.materia is string
+        && data.materia.size() >= 1
+        && data.materia.size() <= 140
+        && data.titulo is string
+        && data.titulo.size() >= 1
+        && data.titulo.size() <= 200
+        && data.contenido is string
+        && data.contenido.size() <= 15000
+        && data.etiquetas is list
+        && data.etiquetas.size() <= 10
+        && (data.etiquetas.size() == 0 || (data.etiquetas[0] is string && data.etiquetas[0].size() <= 40))
+        && data.autorFuente is string
+        && data.autorFuente.size() <= 200
+        && data.isbnDoi is string
+        && data.isbnDoi.size() <= 100
+        && data.enlaceUrl is string
+        && data.enlaceUrl.size() <= 500
+        && (data.enlaceUrl.size() == 0 || data.enlaceUrl.matches('^https?://.*'))
+        && data.flashcardFrente is string
+        && data.flashcardFrente.size() <= 1000
+        && data.preguntaOpciones is list
+        && data.preguntaOpciones.size() <= 6
+        && (data.preguntaOpciones.size() == 0 || (data.preguntaOpciones[0] is string && data.preguntaOpciones[0].size() <= 300))
+        && data.preguntaCorrecta is int
+        && data.preguntaCorrecta >= 0
+        && data.preguntaCorrecta <= 5
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /shared_resources/{resourceId} {
+      allow get: if isValidId(resourceId) && existing().isPublic == true;
+      allow list: if resource.data.isPublic == true;
+
+      allow create: if isVerifiedUser()
+        && isValidId(resourceId)
+        && isValidSharedResource(incoming())
+        && incoming().authorUid == request.auth.uid
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedUser()
+        && isValidId(resourceId)
+        && existing().authorUid == request.auth.uid
+        && isValidSharedResource(incoming())
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'authorAlias',
+          'tipoRecurso',
+          'categoria',
+          'anio',
+          'materia',
+          'titulo',
+          'contenido',
+          'etiquetas',
+          'autorFuente',
+          'isbnDoi',
+          'enlaceUrl',
+          'flashcardFrente',
+          'preguntaOpciones',
+          'preguntaCorrecta',
+          'updatedAt'
+        ]);
+
+      allow delete: if isVerifiedUser()
+        && isValidId(resourceId)
+        && existing().authorUid == request.auth.uid;
+    }
+
+    match /avisos/{avisoId} {
+      allow get: if isValidId(avisoId) && (existing().isPublic == true || isAdmin());
+      allow list: if resource.data.isPublic == true;
+
+      allow create: if isAdmin()
+        && isValidId(avisoId)
+        && isValidAviso(incoming())
+        && incoming().authorUid == request.auth.uid
+        && incoming().revision == 1
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isAdmin()
+        && isValidId(avisoId)
+        && isValidAviso(incoming())
+        && incoming().authorUid == existing().authorUid
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().revision >= existing().revision
+        && incoming().revision <= existing().revision + 1
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'activo',
+          'titulo',
+          'mensaje',
+          'categoria',
+          'revision',
+          'updatedAt'
+        ]);
+
+      allow delete: if isAdmin()
+        && isValidId(avisoId);
+    }
+  }
+}

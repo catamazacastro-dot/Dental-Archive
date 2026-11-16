@@ -1,0 +1,84 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Bordó (identidad, títulos, botones principales) y Rosa Antiguo (tarjetas destacadas y detalles) */
+  --color-rose-50: #f7ebeb;
+  --color-rose-100: #eed8d7;
+  --color-rose-200: #dcbbba;
+  --color-rose-300: #c89695;
+  --color-rose-400: #b27476;
+  --color-rose-500: #994f59;
+  --color-rose-600: #872e43;
+  --color-rose-700: #7a1c33;
+  --color-rose-800: #68162a;
+  --color-rose-900: #7a1c33;
+  --color-rose-950: #4a0d1c;
+
+  /* Verde Salvia (categorías, estados y elementos secundarios) */
+  --color-emerald-50: #eef3ee;
+  --color-emerald-100: #dde6de;
+  --color-emerald-200: #bfd0c1;
+  --color-emerald-300: #9db4a1;
+  --color-emerald-400: #7f9a83;
+  --color-emerald-500: #6f8773;
+  --color-emerald-600: #5d7561;
+  --color-emerald-700: #4d6351;
+  --color-emerald-800: #3d4f40;
+  --color-emerald-900: #2f3e32;
+  --color-emerald-950: #212c23;
+
+  /* Gris Cálido (textos secundarios y neutros cálidos sobre Marfil) */
+  --color-slate-50: #f6f1ea;
+  --color-slate-100: #ede6dc;
+  --color-slate-200: #e0d7cc;
+  --color-slate-300: #ccc1b4;
+  --color-slate-400: #968d87;
+  --color-slate-500: #736b66;
+  --color-slate-600: #5e5753;
+  --color-slate-700: #4a4340;
+  --color-slate-800: #36302e;
+  --color-slate-900: #261f1d;
+  /* Biblioteca Universitaria: tokens exactos */
+  --color-biblio-cream: #f8f5f1;
+  --color-biblio-bordo: #653044;
+  --color-biblio-rosa: #b8798e;
+  --color-biblio-salvia: #a1b3a0;
+  --color-biblio-palido: #e9d9dc;
+
+  --font-serif: "Playfair Display", Georgia, Cambria, "Times New Roman", serif;
+}
+
+@layer base {
+  :root {
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .font-serif {
+    font-family: "Playfair Display", Georgia, Cambria, "Times New Roman", serif;
+  }
+
+  code, pre, .font-mono {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  body {
+    background-color: #faf6f0;
+    color: #261f1d;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

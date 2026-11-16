@@ -1,0 +1,8 @@
+{
+  "name": "Kora Studio",
+  "description": "Estudio interactivo para diseñar, probar en vivo e instalar aplicaciones móviles para iOS y Android con exportación a React Native, Flutter y PWA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

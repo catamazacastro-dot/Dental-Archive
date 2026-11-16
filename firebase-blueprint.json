@@ -1,0 +1,198 @@
+{
+  "entities": {
+    "SharedResource": {
+      "title": "SharedResource",
+      "description": "Recurso académico o apunte compartido voluntariamente por un estudiante en la Biblioteca Compartida sin PII ni telemetría.",
+      "type": "object",
+      "properties": {
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "UID de Firebase Auth del autor que publicó el recurso."
+        },
+        "authorAlias": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "Alias público no identificatorio del estudiante."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Indica que el recurso fue publicado voluntariamente para consulta comunitaria."
+        },
+        "tipoRecurso": {
+          "type": "string",
+          "enum": ["documento", "flashcard", "pregunta"],
+          "description": "Tipo estructural del recurso compartido."
+        },
+        "categoria": {
+          "type": "string",
+          "enum": ["apuntes", "resumenes", "pdfs", "libros", "cuadros", "flashcards", "preguntas"],
+          "description": "Categoría dentro de la Biblioteca de Apuntes."
+        },
+        "anio": {
+          "type": "integer",
+          "description": "Año del plan de estudios (1 a 5)."
+        },
+        "materia": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140,
+          "description": "Asignatura correspondiente al recurso."
+        },
+        "titulo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Título del apunte, libro, flashcard o pregunta."
+        },
+        "contenido": {
+          "type": "string",
+          "maxLength": 15000,
+          "description": "Contenido textual del apunte, respuesta de flashcard o explicación."
+        },
+        "etiquetas": {
+          "type": "array",
+          "description": "Hasta 10 etiquetas de estudio (ej. 1er parcial, Final)."
+        },
+        "autorFuente": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Autor o edición de la referencia bibliográfica verificable."
+        },
+        "isbnDoi": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "ISBN o DOI verificable de la fuente."
+        },
+        "enlaceUrl": {
+          "type": "string",
+          "maxLength": 500,
+          "pattern": "^https?://.*",
+          "description": "Enlace externo HTTP/HTTPS verificable."
+        },
+        "flashcardFrente": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Pregunta o frente cuando tipoRecurso es flashcard."
+        },
+        "preguntaOpciones": {
+          "type": "array",
+          "description": "Lista de opciones cuando tipoRecurso es pregunta."
+        },
+        "preguntaCorrecta": {
+          "type": "integer",
+          "description": "Índice de la opción correcta (0 a 5)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp del servidor al crear el recurso."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp del servidor de la última actualización."
+        }
+      },
+      "required": [
+        "authorUid",
+        "authorAlias",
+        "isPublic",
+        "tipoRecurso",
+        "categoria",
+        "anio",
+        "materia",
+        "titulo",
+        "contenido",
+        "etiquetas",
+        "autorFuente",
+        "isbnDoi",
+        "enlaceUrl",
+        "flashcardFrente",
+        "preguntaOpciones",
+        "preguntaCorrecta",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AvisoGlobal": {
+      "title": "AvisoGlobal",
+      "description": "Aviso académico global publicado y actualizado por la administración para notificar a todos los usuarios.",
+      "type": "object",
+      "properties": {
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "description": "UID de Firebase Auth del administrador que creó el aviso."
+        },
+        "isPublic": {
+          "type": "boolean",
+          "description": "Permite lectura pública del aviso a todos los usuarios."
+        },
+        "activo": {
+          "type": "boolean",
+          "description": "Indica si el aviso está activo y visible para los usuarios."
+        },
+        "titulo": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 140,
+          "description": "Título breve del aviso o recordatorio."
+        },
+        "mensaje": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "description": "Detalle completo del aviso."
+        },
+        "categoria": {
+          "type": "string",
+          "enum": ["aviso", "importante", "examen", "recordatorio"],
+          "description": "Tipo o urgencia del aviso."
+        },
+        "revision": {
+          "type": "integer",
+          "description": "Número de versión que se incrementa al modificar el aviso para reenviar notificaciones."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp del servidor al crear el aviso."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp del servidor de la última modificación."
+        }
+      },
+      "required": [
+        "authorUid",
+        "isPublic",
+        "activo",
+        "titulo",
+        "mensaje",
+        "categoria",
+        "revision",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/shared_resources/{resourceId}": {
+      "schema": {
+        "$ref": "#/entities/SharedResource"
+      },
+      "description": "Colección comunitaria opt-in de apuntes, bibliografía verificable, flashcards y preguntas compartidas por estudiantes."
+    },
+    "/avisos/{avisoId}": {
+      "schema": {
+        "$ref": "#/entities/AvisoGlobal"
+      },
+      "description": "Colección de avisos globales administrados para notificar cambios, fechas y recordatorios a todos los usuarios."
+    }
+  }
+}
